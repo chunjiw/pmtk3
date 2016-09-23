@@ -5,11 +5,14 @@
 %%
 % PMTKslow
 %%
-
+clear
 % This file is from pmtk3.googlecode.com
-
+addpath('C:\Users\chunjiw\Documents\Projects\pmtk3\pmtkTools\dataTools');
+addpath('C:\Users\chunjiw\Documents\Projects\pmtk3\bigData\mnistAll');
+addpath('C:\Users\chunjiw\Documents\Projects\pmtk3\matlabTools\stats');
+addpath('C:\Users\chunjiw\Documents\Projects\pmtk3\matlabTools\cwTools');
 loadData('mnistAll');
-if 0
+if 1
   % test on all data- 255 seconds, 3.09% error
   trainndx = 1:60000; testndx =  1:10000;
 else
@@ -23,7 +26,7 @@ ntest = length(testndx);
 Xtrain = double(reshape(mnist.train_images(:,:,trainndx),28*28,ntrain)');
 Xtest  = double(reshape(mnist.test_images(:,:,testndx),28*28,ntest)');
 
-if 0 
+if 1 
   % matrix is real-valued but has many zeros due to black boundary
   % so we make it sparse to save space - does not work in octave
   Xtrain = sparse(Xtrain);
@@ -34,6 +37,7 @@ ytrain = (mnist.train_labels(trainndx));
 ytest  = (mnist.test_labels(testndx));
 clear mnist trainndx testndx; % save space
 
+%%
 tic
 % Precompute sum of squares term for speed
 XtrainSOS = sum(Xtrain.^2,2);
@@ -49,11 +53,11 @@ end
 batches = mat2cell(1:ntest,1,(ntest/nbatches)*ones(1,nbatches));
 ypred = zeros(ntest,1);
 if ~isOctave(), wbar = waitbar(0,sprintf('%d of %d classified',0,ntest)); end % waitbar only works in Matlab
-% Classify
+%% Classify
 for i=1:nbatches
     t = toc; if ~isOctave(), waitbar(i/nbatches,wbar,sprintf('%d of %d Classified\nElapsed Time: %.2f seconds',(i-1)*(ntest/nbatches),ntest,t));end
     dst = sqDistance(Xtest(batches{i},:),Xtrain,XtestSOS(batches{i},:),XtrainSOS);
-    [junk,closest] = min(dst,[],2);
+    [~,closest] = min(dst,[],2);
     ypred(batches{i}) = ytrain(closest);
 end
 % Report
